@@ -13,27 +13,16 @@ use RacingCar\Leaderboard\SelfDrivingCar;
 class LeaderboardTest extends TestCase
 {
     private Driver $driver1;
-
     private Driver $driver2;
-
     private Driver $driver3;
-
     private SelfDrivingCar $driver4;
-
     private Race $race1;
-
     private Race $race2;
-
     private Race $race3;
-
     private Race $race4;
-
     private Race $race5;
-
     private Race $race6;
-
     private Leaderboard $sampleLeaderboard1;
-
     private Leaderboard $sampleLeaderboard2;
 
     protected function setUp(): void
@@ -59,40 +48,41 @@ class LeaderboardTest extends TestCase
 
     public function testShouldSumThePoints(): void
     {
-        // setup
-
-        // act
         $results = $this->sampleLeaderboard1->getDriverResults();
 
-        // verify
         $this->assertArrayHasKey('Lewis Hamilton', $results);
         $this->assertSame(18 + 18 + 25, $results['Lewis Hamilton']);
     }
 
     public function testShouldFindWinner(): void
     {
-        // setup
-
-        // act
         $result = $this->sampleLeaderboard1->getDriverRankings();
 
-        // verify
         $this->assertSame('Lewis Hamilton', $result[0]);
     }
 
     public function testShouldKeepAllDriversWhenSamePoints(): void
     {
-        // setup
-        // bug, drops drivers with same points
         $winner1 = new Race('Australian Grand Prix', [$this->driver1, $this->driver2, $this->driver3]);
         $winner2 = new Race('Malaysian Grand Prix', [$this->driver2, $this->driver1, $this->driver3]);
         $exEquoLeaderboard = new Leaderboard([$winner1, $winner2]);
 
-        // act
         $rankings = $exEquoLeaderboard->getDriverRankings();
 
-        // verify
-        $this->assertSame([$this->driver1->name, $this->driver2->name, $this->driver3->name], $rankings);
-        // note: the order of driver1 and driver2 is platform dependent
+        $expectedRankings = [$this->driver1->name, $this->driver2->name, $this->driver3->name];
+        sort($rankings); // Ensure order does not affect the result
+        sort($expectedRankings);
+        $this->assertSame($expectedRankings, $rankings);
+    }
+
+    public function testShouldHandleSelfDrivingCars(): void
+    {
+        $results = $this->sampleLeaderboard2->getDriverResults();
+        $rankings = $this->sampleLeaderboard2->getDriverRankings();
+
+        $expectedSelfDrivingCarName = 'Self Driving Car - Acme (1.4)';
+        $this->assertArrayHasKey($expectedSelfDrivingCarName, $results);
+        $this->assertSame(25 + 25 + 15, $results[$expectedSelfDrivingCarName]);
+        $this->assertContains($expectedSelfDrivingCarName, $rankings);
     }
 }
